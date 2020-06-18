@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class SinginScreen extends StatefulWidget {
   String previousName;
@@ -21,9 +22,14 @@ class SinginScreenState extends State<SinginScreen> {
   final email=TextEditingController();
   final ageController=TextEditingController();
   final passwordController=TextEditingController();
-
+  final dateOfBirthController=TextEditingController();
+  List<String> months=['','Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'NOv','Dec'];
+  Set<String> set1={'Value1'};
+  Map<String, int> nameAge={};
+  DateTime dateOfBirth;
   File _image;
   final picker = ImagePicker();
+  bool isLoading;
 
   Future getImage() async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
@@ -34,144 +40,188 @@ class SinginScreenState extends State<SinginScreen> {
   }
 
   @override
+  void initState() {
+    isLoading=false;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     
     
     return Scaffold(
       appBar: AppBar(title: Text('${widget.previousName} Screeen'),),
       body:
-        SingleChildScrollView(
-          child: Align(
-            alignment: Alignment.center,
-            child: Container(
-              
-              
-              width: MediaQuery.of(context).size.width * 0.9,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                // Container(
-                //   height: MediaQuery.of(context).size.height * 0.3,
-                //   child: Icon(Icons.person, color: Colors.black,)
-                //   ),
-                Form(
-                  key: fkey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: userName,
-                        validator: (input){
-                          if(input.length < 3){
-                            return "Username is too short.";
-                          }else{
-                            return null;
-                          }
-                        },
-                        decoration: InputDecoration(
-                          hintText: "Enter User Name",
-                          contentPadding: EdgeInsets.only(left: 20)
+        ModalProgressHUD(
+          inAsyncCall: isLoading,
+          dismissible: true,
+          child: SingleChildScrollView(
+            child: Align(
+              alignment: Alignment.center,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                  // Container(
+                  //   height: MediaQuery.of(context).size.height * 0.3,
+                  //   child: Icon(Icons.person, color: Colors.black,)
+                  //   ),
+                  Form(
+                    key: fkey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: userName,
+                          validator: (input){
+                            if(input.length < 3){
+                              return "Username is too short.";
+                            }else{
+                              return null;
+                            }
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Enter User Name",
+                            contentPadding: EdgeInsets.only(left: 20)
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 10,),
-                      TextFormField(
-                        controller: email,
-                        validator: (input){
-                          return validateEmail(input);
-                        },
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          hintText: "Enter email"
+                        SizedBox(height: 10,),
+                        TextFormField(
+                          controller: email,
+                          validator: (input){
+                            return validateEmail(input);
+                          },
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            hintText: "Enter email"
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 10,),
-                      TextFormField(
-                        controller: ageController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          WhitelistingTextInputFormatter.digitsOnly
-                        ],
-                        maxLength: 3,
-                        decoration: InputDecoration(
-                          hintText: "Age",
-                          
+                        SizedBox(height: 10,),
+                        TextFormField(
+                          controller: ageController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter.digitsOnly
+                          ],
+                          maxLength: 3,
+                          decoration: InputDecoration(
+                            hintText: "Age",
+                            
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 10,),
-                      TextFormField(
-                        controller: passwordController,
-                        validator: (input){
-                          return input.length<8?"Password must be greater than 7 charaters":null;
-                        },
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          hintText: "Enter password"
+                        TextFormField(
+                          onTap: (){
+                            showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(), 
+                              firstDate: DateTime.now(), 
+                              lastDate: DateTime(2021),
+                              ).then((value) {
+                                setState((){
+                                  isLoading=true;
+                                });
+                                dateOfBirth=value;
+                                dateOfBirthController.text='${value.day}-${months[value.month]}-${value.year}';
+                              });
+                          },
+                          controller: dateOfBirthController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter.digitsOnly
+                          ],
+                          maxLength: 3,
+                          decoration: InputDecoration(
+                            hintText: "Date of Birth",
+                            
+                          ),
                         ),
-                      ),
-                      
-                      Container(
-                        child: _image==null?Icon(Icons.add_a_photo):Image.file(_image),
-                      ),
-                      Container(
-                        child: CachedNetworkImage(
-                            imageUrl: "https://www.comsats.edu.pk/img/25.jpg",
-                            imageBuilder: (context, imageProvider) => Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: imageProvider,
-                                    fit: BoxFit.cover,
-                                    colorFilter:
-                                        ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
+                        SizedBox(height: 10,),
+                        TextFormField(
+                          controller: passwordController,
+                          validator: (input){
+                            return input.length<8?"Password must be greater than 7 charaters":null;
+                          },
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: "Enter password"
+                          ),
+                        ),
+                        
+                        Container(
+                          child: _image==null?Icon(Icons.add_a_photo):Image.file(_image),
+                        ),
+                        Container(
+                          child: CachedNetworkImage(
+                              imageUrl: "https://www.comsats.edu.pk/img/25.jpg",
+                              imageBuilder: (context, imageProvider) => Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                      colorFilter:
+                                          ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
+                                ),
                               ),
-                            ),
-                            placeholder: (context, url) => CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
+                              placeholder: (context, url) => CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => Icon(Icons.error),
+                          ),
                         ),
-                      ),
-                      RaisedButton(
-                        onPressed: (){
-                          // picker.getImage(source: ImageSource.camera).then((value) {
-                          //   _image=File(value.path);
-                          // });
-                          getImage();
-                        },
-                        child: Text('Pick Profile Image'),
-                      )
-                      
-                    ],
+                        RaisedButton(
+                          onPressed: (){
+                            // picker.getImage(source: ImageSource.camera).then((value) {
+                            //   _image=File(value.path);
+                            // });
+                            getImage();
+                          },
+                          child: Text('Pick Profile Image'),
+                        )
+                        
+                      ],
+                    ),
                   ),
-                ),
-                RaisedButton(
-                  onPressed: (){
-                    print('''
-                    User Name: ${userName.text}, 
-                    Email : ${email.text}
-                    ''');
+                  RaisedButton(
+                    onPressed: (){
+                      setState(() {
+                        isLoading=true;
+                      });
+                      Future.delayed(Duration(seconds: 10),(){
+                        setState(() {
+                          isLoading=false;
+                        });
+                      });
+                      nameAge.addAll({"${userName.text}":int.parse('${ageController.text}'),});
+                      print(nameAge);
+                      // print('''
+                      // User Name: ${userName.text}, 
+                      // Email : ${email.text}
+                      // ''');
 
-                    // FormState fs=fkey.currentState;
-                    if(userName.text.isNotEmpty){
-                      print('My form is valid');
-                    }else{
-                      print('My form data is invalid!');
-                      Fluttertoast.showToast(
-                        msg: "User name is empty!",
-                        toastLength: Toast.LENGTH_LONG,
-                        gravity: ToastGravity.CENTER,
-                        timeInSecForIosWeb: 3,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                        fontSize: 16.0
-                    );
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Text('SignUp'),
-                      Icon(Icons.arrow_forward_ios)
-                    ],
-                  ),
-                )
+                      // FormState fs=fkey.currentState;
+                      if(userName.text.isNotEmpty){
+                        print('My form is valid');
+                      }else{
+                        print('My form data is invalid!');
+                        Fluttertoast.showToast(
+                          msg: "User name is empty!",
+                          toastLength: Toast.LENGTH_LONG,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 3,
+                          backgroundColor: Colors.black,
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        Text('SignUp'),
+                        Icon(Icons.arrow_forward_ios)
+                      ],
+                    ),
+                  )
 
-              ],),
+                ],),
+              ),
             ),
           ),
         )
