@@ -51,6 +51,17 @@ class SinginScreenState extends State<SinginScreen> {
     
     return Scaffold(
       appBar: AppBar(title: Text('${widget.previousName} Screeen'),),
+      drawer: Container(
+        color: Colors.transparent,
+        child: ClipPath(
+          clipper: ClippingClass(),
+          child: Drawer(
+            child: Container(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
       body:
         ModalProgressHUD(
           inAsyncCall: isLoading,
@@ -181,6 +192,42 @@ class SinginScreenState extends State<SinginScreen> {
                   ),
                   RaisedButton(
                     onPressed: (){
+                      showDialog(context: context,
+                        builder: (context)=>ConfirmDialog()
+                      );
+                      // showDialog(context: context,
+                      //   builder: (context)=>AlertDialog(
+                      //     title: Text('Are you sure?'),
+                      //     content: Container(
+                      //       height: 200,
+                      //       child: Text('do you wants to sign up?')
+                      //       // child: Column(
+                      //       //   children: [
+                      //       //     Row(children: [
+                      //       //       Icon(Icons.confirmation_number),
+                      //       //       Text('Hello'),
+                      //       //     ],),
+                      //       //     Text('Hello World'),
+                      //       //   ],
+                      //       // ),
+                      //     ),
+                      //     actions: [
+                      //       RaisedButton(
+                      //         onPressed: (){
+                      //           Navigator.pop(context);
+                      //         },
+                      //         child: Text('Cancel'),
+                      //       ),
+                      //       RaisedButton(
+                      //         onPressed: (){
+                      //           Navigator.pop(context);
+                      //         },
+                      //         color: Colors.blue,
+                      //         child: Text('Save'),
+                      //       ),
+                      //     ],
+                      //   )
+                      // );
                       setState(() {
                         isLoading=true;
                       });
@@ -242,5 +289,101 @@ class SinginScreenState extends State<SinginScreen> {
       return "the email address is not valid";
     }
     return null;
+  }
+}
+
+
+
+class ClippingClass extends CustomClipper<Path> {
+  @override
+   Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, 0);
+    path.lineTo(0, size.height);
+    //path.quadraticBezierTo(size.width*0.5, size.height*0.95, size.width, size.height*0.8);
+    path.lineTo(size.width, size.height* 0.1);
+    path.lineTo(0, 0);
+    path.close();
+
+    return path;
+   }
+
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+
+class ConfirmDialog extends StatefulWidget {
+  @override
+  _ConfirmDialogState createState() => _ConfirmDialogState();
+}
+
+class _ConfirmDialogState extends State<ConfirmDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          
+          Center(
+            child: Container(
+              padding: EdgeInsets.only(top: 80),
+              height: MediaQuery.of(context).size.height * 0.4,
+              width: MediaQuery.of(context).size.width * 0.9,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20)
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    Text('Are you sure?\n', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+                    
+                    Text('Ypu wants to sign up?'),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Container(
+                        margin: EdgeInsets.only(right: 20, top: 35),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            RaisedButton(
+                              onPressed: (){
+                                Navigator.pop(context);
+                              },
+                              child: Text('Cancel'),
+                            ),
+                            SizedBox(width: 10,),
+                            RaisedButton(
+                              onPressed: (){
+                                Navigator.pop(context);
+                              },
+                              color: Colors.blue,
+                              child: Text('Ok'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          Positioned(
+            top: 150,
+            left: MediaQuery.of(context).size.width * 0.5 - 35,
+            child: Container(
+                          height: 70,
+                          width: 70,
+                          child: CircleAvatar(child: Icon(Icons.ac_unit))),
+          ),
+        
+        ],
+      ),
+    );
   }
 }
